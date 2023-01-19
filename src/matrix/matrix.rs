@@ -53,7 +53,7 @@ impl Matrix {
     /// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
     /// from 0 to 1 or alternatively from −1 to 1, depending on convention.
     pub fn sigmoid(&self) -> Result<Matrix> {
-        let mut new_matrix = Matrix {values: vec![]};
+        let mut new_matrix = Matrix { values: vec![] };
         for row in self.values.iter() {
             let mut new_row = vec![];
             for value in row.iter() {
@@ -66,7 +66,7 @@ impl Matrix {
 
     /// Derivative of Sigmoid function = sigmoid(input) * (1 - sigmoid(input))
     pub fn derivative_of_sigmoid(&self) -> Result<Matrix> {
-        let mut new_matrix = Matrix {values: vec![]};
+        let mut new_matrix = Matrix { values: vec![] };
         for row in self.values.iter() {
             let mut new_row = vec![];
             for value in row.iter() {
@@ -83,11 +83,11 @@ impl Matrix {
     /// of the original two matrices. It should not be confused with the more common matrix product. It is attributed to, and named after,
     /// either French mathematician Jacques Hadamard, or German mathematician Issai Schur.
     pub fn hadamard_product(&self, matrix: Matrix) -> Result<Matrix> {
-        let rows_self = self.values.len();
-        let rows_matrix = matrix.values.len();
+        let (self_rows, self_cols) = matrix_rows_and_cols(self);
+        let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
         if
         // matrices are not from the same size
-        rows_self != rows_matrix {
+        self_rows != matrix_rows || self_cols != matrix_cols {
             bail!("matrices are not the same size");
         }
         let mut new_matrix = Matrix { values: vec![] };
@@ -107,18 +107,8 @@ impl Matrix {
     /// The resulting matrix, known as the matrix product, has the number of rows of the first and the number of columns of the second matrix.
     /// The product of matrices A and B is denoted as AB.
     pub fn matrix_multiplication(&self, matrix: Matrix) -> Result<Matrix> {
-        let self_rows = self.values.len();
-        let self_cols = if self.values.len() <= 0 {
-            0
-        } else {
-            self.values[0].len()
-        };
-        let matrix_rows = matrix.values.len();
-        let matrix_cols = if matrix.values.len() <= 0 {
-            0
-        } else {
-            matrix.values[0].len()
-        };
+        let (self_rows, self_cols) = matrix_rows_and_cols(self);
+        let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
         let mut new_matrix = Matrix {
             values: vec![vec![0.0; matrix_cols]; self_rows],
         };
@@ -143,12 +133,7 @@ impl Matrix {
     /// that is it switches the row and column indices of the matrix by producing another matrix denoted
     /// as AT (also written A′, Atr, tA or At).
     pub fn transpose(&self) -> Result<Matrix> {
-        let self_rows = self.values.len();
-        let self_cols = if self.values.len() <= 0 {
-            0
-        } else {
-            self.values[0].len()
-        };
+        let (self_rows, self_cols) = matrix_rows_and_cols(self);
         let mut new_matrix = Matrix {
             values: vec![vec![0.0; self_rows]; self_cols],
         };
@@ -161,20 +146,24 @@ impl Matrix {
     }
 }
 
-/// Sigmoid function:
-/// A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve.
-/// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
-/// from 0 to 1 or alternatively from −1 to 1, depending on convention.
-pub fn sigmoid(input: &f64) -> f64 {
+fn sigmoid(input: &f64) -> f64 {
     /// Euler's number (e)
     let e: f64 = std::f64::consts::E;
     1.0 / (1.0 + e.powf(-input))
 }
 
-
-/// Derivative of Sigmoid function = sigmoid(input) * (1 - sigmoid(input))
-pub fn derivative_of_sigmoid(input: &f64) -> f64 {
+fn derivative_of_sigmoid(input: &f64) -> f64 {
     sigmoid(input) * (1.0 - sigmoid(input))
+}
+
+fn matrix_rows_and_cols(matrix: &Matrix) -> (usize, usize) {
+    let rows = matrix.values.len();
+    let cols = if matrix.values.len() <= 0 {
+        0
+    } else {
+        matrix.values[0].len()
+    };
+    (rows, cols)
 }
 
 #[cfg(test)]
