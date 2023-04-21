@@ -64,7 +64,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn query_test_example_from_the_book() {
+    fn feedforward_example_from_the_book() {
         let input = vec![0.9, 0.1, 0.8];
         let mut in_between_results = Some(vec![]);
         let actual_result = run(&vec![
@@ -93,46 +93,41 @@ mod tests {
         assert_eq!(&in_between_results.unwrap(), &expected_result.1);
     }
 
-    /// Example
-    /// 3 input nodes, 4 hidden nodes, again 4 hidden nodes, 3 output nodes
-    /// Weight 1.1 means node 1 to node 1 in next layer
-    /// Weight 1.2 means node 1 to node 2 in next layer
-    /// Weight 2.1 means node 2 to node 1 in next layer
     #[test]
-    fn query_test_my_own_example_multiple_hidden_layers_and_with_different_sizes() {
-        let input = vec![0.9, 0.1, 0.8];
+    fn feedforward_my_own_example_with_multiple_hidden_layers_and_with_different_sizes() {
+        let input = vec![1.0, 0.5, -1.5];
         let mut in_between_results = Some(vec![]);
         let actual_result = run(&vec![
             // input to hidden weights
             Layer::new(Matrix::new(vec![
-                vec![1.1, 2.1, 3.1],
-                vec![1.2, 2.2, 3.2],
-                vec![1.3, 2.3, 3.3],
-                vec![1.4, 2.4, 3.4],
+                vec![-1.03531205,  0.29141863, -0.79309423],
+                vec![-0.45778525, -0.92007301,  0.91021779],
+                vec![-0.57811735,  0.93723469,  0.22603182],
+                vec![-0.10960233, -0.49248161, -0.32769214],
             ])),
             // hidden to hidden weights
             Layer::new(Matrix::new(vec![
-                vec![1.1, 2.1, 3.1, 4.1],
-                vec![1.2, 2.2, 3.2, 4.2],
-                vec![1.3, 2.3, 3.3, 4.3],
-                vec![1.4, 2.4, 3.4, 4.4],
+                vec![-0.18527392, -0.77636724,  0.48528415, -0.32014238],
+                vec![-0.44772873,  0.44900513, -0.57772342, -0.08835226],
+                vec![ 0.51559826,  0.32360245,  0.88738762,  0.17788368],
+                vec![ 0.21927963, -0.36734758,  0.28202263, -0.46584744],
             ])),
             // hidden to output weights
             Layer::new(Matrix::new(vec![
-                vec![1.1, 2.1, 3.1, 4.1],
-                vec![1.2, 2.2, 3.2, 4.2],
-                vec![1.3, 2.3, 3.3, 4.3],
+                vec![0.7376723 , -0.87429221,  0.03202698,  0.19527884],
+                vec![0.01802741, -0.25608505, -0.37182482,  1.28308142],
+                vec![0.3852866 , -0.37808645, -0.309396  , -0.6621738 ],
             ])),
         ], input, &mut in_between_results).unwrap();
         let expected_result =
-            (vec![0.9999695626612428, 0.9999795968549543, 0.9999863231488806],
+            (vec![0.5309719815497981, 0.5704062076991225, 0.37726694502286784],
              vec![
-                 Matrix::new(vec![vec![3.6800000000000006], vec![3.8600000000000003], vec![4.04], vec![4.220000000000001]]),
-                 Matrix::new(vec![vec![0.9753975715972605], vec![0.9793667027730938], vec![0.9827068434300946], vec![0.9855142760025332]]),
-                 Matrix::new(vec![vec![10.216607150824164], vec![10.60890569020446], vec![11.001204229584758], vec![11.393502768965057]]),
-                 Matrix::new(vec![vec![0.9999634432133694], vec![0.999975305509231], vec![0.9999833186780578], vec![0.9999887316656669]]),
-                 Matrix::new(vec![vec![10.399810016835303], vec![10.799801096741938], vec![11.199792176648568]]),
-                 Matrix::new(vec![vec![0.9999695626612428], vec![0.9999795968549543], vec![0.9999863231488806]]),
+                 Matrix::new(vec![vec![0.3000386100000001], vec![-2.28314844], vec![-0.44854773499999995], vec![0.13569507500000005]]),
+                 Matrix::new(vec![vec![0.5744519553199438], vec![0.0925282494022273], vec![0.3897061104950745], vec![0.5338718107891272]]),
+                 Matrix::new(vec![vec![-0.16006366076376224], vec![-0.4879641137335198], vec![0.7669162570604473], vec![-0.046821290419598594]]),
+                 Matrix::new(vec![vec![0.460069301717884], vec![0.38037328757090877], vec![0.6828534410086781], vec![0.48829681532618874]]),
+                 Matrix::new(vec![vec![0.12404674691299854], vec![0.2835086589649931], vec![-0.5011649299160179]]),
+                 Matrix::new(vec![vec![0.5309719815497981], vec![0.5704062076991225], vec![0.37726694502286784]]),
              ]);
         assert_eq!(&actual_result.0.results, &expected_result.0);
         assert_eq!(&in_between_results.unwrap(), &expected_result.1);
