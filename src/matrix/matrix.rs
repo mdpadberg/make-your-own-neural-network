@@ -1,4 +1,4 @@
-use anyhow::{bail, Ok, Result};
+use anyhow::{ensure, Ok, Result};
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -91,11 +91,10 @@ impl Matrix {
     pub fn hadamard_product(&self, matrix: &Matrix) -> Result<Matrix> {
         let (self_rows, self_cols) = matrix_rows_and_cols(self);
         let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
-        if
-        // matrices are not from the same size
-        self_rows != matrix_rows || self_cols != matrix_cols {
-            bail!("matrices are not the same size");
-        }
+        ensure!(
+            self_rows == matrix_rows && self_cols == matrix_cols,
+            "Matrix: matrices are not the same size"
+        );
         let mut new_matrix = Matrix(vec![]);
         for (y, row) in self.0.iter().enumerate() {
             let mut new_row: Vec<f64> = vec![];
@@ -112,9 +111,13 @@ impl Matrix {
     /// For matrix multiplication, the number of columns in the first matrix must be equal to the number of rows in the second matrix.
     /// The resulting matrix, known as the matrix product, has the number of rows of the first and the number of columns of the second matrix.
     /// The product of matrices A and B is denoted as AB.
-    pub fn matrix_multiplication(&self, matrix: &Matrix) -> Matrix {
+    pub fn matrix_multiplication(&self, matrix: &Matrix) -> Result<Matrix> {
         let (self_rows, self_cols) = matrix_rows_and_cols(self);
         let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
+        ensure!(
+            self_cols == matrix_rows,
+            "Matrix: the number of columns in the first matrix must be equal to the number of rows in the second matrix"
+        );
         let mut new_matrix = Matrix(vec![vec![0.0; matrix_cols]; self_rows]);
         for i in 0..self_rows {
             for j in 0..matrix_cols {
@@ -129,7 +132,7 @@ impl Matrix {
                 }
             }
         }
-        new_matrix
+        Ok(new_matrix)
     }
 
     /// Transpose:
@@ -246,7 +249,7 @@ mod tests {
             vec![4.0, 2.0, 2.0],
         ]);
         assert_eq!(
-            matrix_one.matrix_multiplication(&matrix_two),
+            matrix_one.matrix_multiplication(&matrix_two).unwrap(),
             Matrix(vec![
                 vec![5.0, 4.0, 3.0],
                 vec![8.0, 9.0, 5.0],
