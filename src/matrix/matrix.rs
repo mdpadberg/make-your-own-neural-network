@@ -1,4 +1,4 @@
-use anyhow::{ensure, Ok, Result};
+use anyhow::{ensure, Context, Ok, Result};
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -31,31 +31,50 @@ impl Matrix {
         Matrix(values)
     }
 
-    /// This function adds a float to the all the values in the matrix
-    pub fn add_value_to_all_values_in_matrix(&mut self, value: f64) {
-        for row in self.0.iter_mut() {
-            for current in row.iter_mut() {
-                *current += value
+    /// This function adds a matrix to another matrix of the same size
+    pub fn add_matrix_of_same_size(&mut self, matrix: &Matrix) -> Result<()> {
+        ensure!(
+            self.0.len() == matrix.get_data_as_ref().len(),
+            "Matrix add: the row size of both matrices should be the same"
+        );
+        for (i, row) in self.0.iter_mut().enumerate() {
+            ensure!(
+                row.len()
+                    == matrix
+                        .get_data_as_ref()
+                        .get(i)
+                        .context("Matrix add: cannot retrieve row")?
+                        .len(),
+                "Matrix add: the column size of both matrices should be the same"
+            );
+            for (j, current) in row.iter_mut().enumerate() {
+                *current += matrix.get_data_as_ref()[i][j]
             }
         }
+        Ok(())
     }
 
-    /// This function subtracts a float to the all the values in the matrix
-    pub fn subtract_value_to_all_values_in_matrix(&mut self, value: f64) {
-        for row in self.0.iter_mut() {
-            for current in row.iter_mut() {
-                *current -= value
+    /// This function subtracts a matrix to another matrix of the same size
+    pub fn subtract_matrix_of_same_size(&mut self, matrix: &Matrix) -> Result<()> {
+        ensure!(
+            self.0.len() == matrix.get_data_as_ref().len(),
+            "Matrix subtract: the row size of both matrices should be the same"
+        );
+        for (i, row) in self.0.iter_mut().enumerate() {
+            ensure!(
+                row.len()
+                    == matrix
+                        .get_data_as_ref()
+                        .get(i)
+                        .context("Matrix subtract: cannot retrieve row")?
+                        .len(),
+                "Matrix subtract: the column size of both matrices should be the same"
+            );
+            for (j, current) in row.iter_mut().enumerate() {
+                *current -= matrix.get_data_as_ref()[i][j]
             }
         }
-    }
-
-    /// This function multiplies a float to the all the values in the matrix
-    pub fn multiply_value_to_all_values_in_matrix(&mut self, value: f64) {
-        for row in self.0.iter_mut() {
-            for current in row.iter_mut() {
-                *current *= value
-            }
-        }
+        Ok(())
     }
 
     pub fn apply_activation_function(&mut self) {
@@ -66,7 +85,7 @@ impl Matrix {
     /// A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve.
     /// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
     /// from 0 to 1 or alternatively from −1 to 1, depending on convention.
-    pub fn apply_sigmoid(&mut self) {
+    fn apply_sigmoid(&mut self) {
         for row in self.0.iter_mut() {
             for value in row.iter_mut() {
                 *value = sigmoid(value);
@@ -74,36 +93,17 @@ impl Matrix {
         }
     }
 
+    pub fn apply_derivative_of_activation_function(&mut self) {
+        self.apply_derivative_of_sigmoid()
+    }
+
     /// Derivative of Sigmoid function = sigmoid(input) * (1 - sigmoid(input))
-    pub fn apply_derivative_of_sigmoid(&mut self) {
+    fn apply_derivative_of_sigmoid(&mut self) {
         for row in self.0.iter_mut() {
             for value in row.iter_mut() {
                 *value = derivative_of_sigmoid(value);
             }
         }
-    }
-
-    /// Hadamard product (matrices):
-    /// In mathematics, the Hadamard product (also known as the Schur product[1] or the entrywise product[2]) is a binary operation
-    /// that takes two matrices of the same dimensions, and produces another matrix where each element i,j is the product of elements i,j
-    /// of the original two matrices. It should not be confused with the more common matrix product. It is attributed to, and named after,
-    /// either French mathematician Jacques Hadamard, or German mathematician Issai Schur.
-    pub fn hadamard_product(&self, matrix: &Matrix) -> Result<Matrix> {
-        let (self_rows, self_cols) = matrix_rows_and_cols(self);
-        let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
-        ensure!(
-            self_rows == matrix_rows && self_cols == matrix_cols,
-            "Matrix: matrices are not the same size"
-        );
-        let mut new_matrix = Matrix(vec![]);
-        for (y, row) in self.0.iter().enumerate() {
-            let mut new_row: Vec<f64> = vec![];
-            for (x, current) in row.iter().enumerate() {
-                new_row.push(current * matrix.0[y][x]);
-            }
-            new_matrix.0.push(new_row);
-        }
-        Ok(new_matrix)
     }
 
     /// Matrix Multiplication:
@@ -184,54 +184,89 @@ mod tests {
 
     #[test]
     fn add_value_to_matrix() {
-        let mut matrix = Matrix::new_with_random_values(3, 3);
-        let original_values = matrix.0.clone();
-        matrix.add_value_to_all_values_in_matrix(2.0);
-        for (y, row) in matrix.0.iter().enumerate() {
-            for (x, current) in row.iter().enumerate() {
-                assert_eq!(&(original_values[y][x] + 2.0), current);
-            }
-        }
+        let mut matrix_one = Matrix(vec![
+            vec![0.1, 0.2, 0.3],
+            vec![0.4, 0.5, 0.6],
+            vec![0.7, 0.8, 0.9],
+        ]);
+        let matrix_two = Matrix(vec![
+            vec![0.1, 0.2, 0.3],
+            vec![0.4, 0.5, 0.6],
+            vec![0.7, 0.8, 0.9],
+        ]);
+        let result = matrix_one.add_matrix_of_same_size(&matrix_two);
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(
+            matrix_one,
+            Matrix(vec![
+                vec![0.2, 0.4, 0.6],
+                vec![0.8, 1.0, 1.2],
+                vec![1.4, 1.6, 1.8]
+            ])
+        );
+    }
+
+    #[test]
+    fn add_value_to_matrix_2() {
+        let mut matrix_one = Matrix(vec![
+            vec![0.1, 0.2, 0.3],
+            vec![0.4, 0.5, 0.6],
+            vec![0.7, 0.8, 0.9],
+        ]);
+        let matrix_two = Matrix(vec![vec![0.1, 0.2], vec![0.4, 0.5], vec![0.7, 0.8]]);
+        let result = matrix_one.add_matrix_of_same_size(&matrix_two);
+        assert_eq!(result.is_err(), true);
+        assert_eq!(
+            matrix_one,
+            Matrix(vec![
+                vec![0.1, 0.2, 0.3],
+                vec![0.4, 0.5, 0.6],
+                vec![0.7, 0.8, 0.9]
+            ])
+        );
     }
 
     #[test]
     fn substract_value_to_matrix() {
-        let mut matrix = Matrix::new_with_random_values(3, 3);
-        let original_values = matrix.0.clone();
-        matrix.subtract_value_to_all_values_in_matrix(2.0);
-        for (y, row) in matrix.0.iter().enumerate() {
-            for (x, current) in row.iter().enumerate() {
-                assert_eq!(&(original_values[y][x] - 2.0), current);
-            }
-        }
-    }
-
-    #[test]
-    fn multiply_value_to_matrix() {
-        let mut matrix = Matrix::new_with_random_values(3, 3);
-        let original_values = matrix.0.clone();
-        matrix.multiply_value_to_all_values_in_matrix(2.0);
-        for (y, row) in matrix.0.iter().enumerate() {
-            for (x, current) in row.iter().enumerate() {
-                assert_eq!(&(original_values[y][x] * 2.0), current);
-            }
-        }
-    }
-
-    #[test]
-    fn testing_hadamardProduct_1() {
-        let mut matrix_one = Matrix::new_with_random_values(3, 3);
-        let mut matrix_two = Matrix::new_with_random_values(2, 2);
-        assert!(matrix_one.hadamard_product(&matrix_two).is_err());
-    }
-
-    #[test]
-    fn testing_hadamardProduct_2() {
-        let matrix_one = Matrix(vec![vec![3.0, 2.0], vec![0.0, 1.0], vec![-2.0, 5.0]]);
-        let matrix_two = Matrix(vec![vec![1.0, 2.0], vec![3.0, 1.0], vec![3.0, 3.0]]);
+        let mut matrix_one = Matrix(vec![
+            vec![1.5, 1.5, 1.5],
+            vec![1.5, 1.5, 1.5],
+            vec![1.5, 1.5, 1.5],
+        ]);
+        let matrix_two = Matrix(vec![
+            vec![0.1, 0.2, 0.3],
+            vec![0.4, 0.5, 0.6],
+            vec![0.7, 0.8, 0.9],
+        ]);
+        let result = matrix_one.subtract_matrix_of_same_size(&matrix_two);
+        assert_eq!(result.is_ok(), true);
         assert_eq!(
-            matrix_one.hadamard_product(&matrix_two).unwrap(),
-            Matrix(vec![vec![3.0, 4.0], vec![0.0, 1.0], vec![-6.0, 15.0]])
+            matrix_one,
+            Matrix(vec![
+                vec![1.4, 1.3, 1.2],
+                vec![1.1, 1.0, 0.9],
+                vec![0.8, 0.7, 0.6]
+            ])
+        );
+    }
+
+    #[test]
+    fn substract_value_to_matrix_2() {
+        let mut matrix_one = Matrix(vec![
+            vec![1.5, 1.5, 1.5],
+            vec![1.5, 1.5, 1.5],
+            vec![1.5, 1.5, 1.5],
+        ]);
+        let matrix_two = Matrix(vec![vec![0.1, 0.2], vec![0.4, 0.5], vec![0.7, 0.8]]);
+        let result = matrix_one.subtract_matrix_of_same_size(&matrix_two);
+        assert_eq!(result.is_err(), true);
+        assert_eq!(
+            matrix_one,
+            Matrix(vec![
+                vec![1.5, 1.5, 1.5],
+                vec![1.5, 1.5, 1.5],
+                vec![1.5, 1.5, 1.5],
+            ])
         );
     }
 
