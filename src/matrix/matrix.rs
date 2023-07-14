@@ -31,6 +31,15 @@ impl Matrix {
         Matrix(values)
     }
 
+    /// This function multiplies a float to the all the values in the matrix
+    pub fn multiply_value_to_all_values_in_matrix(&mut self, value: &f64) {
+        for row in self.0.iter_mut() {
+            for current in row.iter_mut() {
+                *current *= value
+            }
+        }
+    }
+
     /// This function adds a matrix to another matrix of the same size
     pub fn add_matrix_of_same_size(&mut self, matrix: &Matrix) -> Result<()> {
         ensure!(
@@ -77,33 +86,38 @@ impl Matrix {
         Ok(())
     }
 
-    pub fn apply_activation_function(&mut self) {
-        self.apply_sigmoid()
-    }
-
-    /// Sigmoid function:
-    /// A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve.
-    /// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
-    /// from 0 to 1 or alternatively from −1 to 1, depending on convention.
-    fn apply_sigmoid(&mut self) {
-        for row in self.0.iter_mut() {
-            for value in row.iter_mut() {
-                *value = sigmoid(value);
-            }
+    pub fn multiply(&self, matrix: &Matrix) -> Result<Matrix> {
+        if self.0.len() == matrix.get_data_as_ref().len() 
+        && self.0[0].len() == matrix.get_data_as_ref()[0].len() {
+            self.multiply_matrix_of_same_size(matrix)
+        } else {
+            self.matrix_multiplication(matrix)
         }
     }
 
-    pub fn apply_derivative_of_activation_function(&mut self) {
-        self.apply_derivative_of_sigmoid()
-    }
-
-    /// Derivative of Sigmoid function = sigmoid(input) * (1 - sigmoid(input))
-    fn apply_derivative_of_sigmoid(&mut self) {
-        for row in self.0.iter_mut() {
-            for value in row.iter_mut() {
-                *value = derivative_of_sigmoid(value);
+    /// This function subtracts a matrix to another matrix of the same size
+    fn multiply_matrix_of_same_size(&self, matrix: &Matrix) -> Result<Matrix> {
+        ensure!(
+            self.0.len() == matrix.get_data_as_ref().len(),
+            "Matrix multiply: the row size of both matrices should be the same"
+        );
+        let (self_rows, self_cols) = matrix_rows_and_cols(self);
+        let mut new_matrix = Matrix(vec![vec![0.0; self_cols]; self_rows]);
+        for (i, row) in self.0.iter().enumerate() {
+            ensure!(
+                row.len()
+                    == matrix
+                        .get_data_as_ref()
+                        .get(i)
+                        .context("Matrix multiply: cannot retrieve row")?
+                        .len(),
+                "Matrix multiply: the column size of both matrices should be the same"
+            );
+            for (j, current) in row.iter().enumerate() {
+                new_matrix.0[i][j] = *current * matrix.get_data_as_ref()[i][j]
             }
         }
+        Ok(new_matrix)
     }
 
     /// Matrix Multiplication:
@@ -111,7 +125,7 @@ impl Matrix {
     /// For matrix multiplication, the number of columns in the first matrix must be equal to the number of rows in the second matrix.
     /// The resulting matrix, known as the matrix product, has the number of rows of the first and the number of columns of the second matrix.
     /// The product of matrices A and B is denoted as AB.
-    pub fn matrix_multiplication(&self, matrix: &Matrix) -> Result<Matrix> {
+    fn matrix_multiplication(&self, matrix: &Matrix) -> Result<Matrix> {
         let (self_rows, self_cols) = matrix_rows_and_cols(self);
         let (matrix_rows, matrix_cols) = matrix_rows_and_cols(&matrix);
         ensure!(
@@ -135,6 +149,40 @@ impl Matrix {
         Ok(new_matrix)
     }
 
+    pub fn apply_activation_function(&self) -> Matrix {
+        self.apply_sigmoid()
+    }
+
+    /// Sigmoid function:
+    /// A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve.
+    /// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
+    /// from 0 to 1 or alternatively from −1 to 1, depending on convention.
+    fn apply_sigmoid(&self) -> Matrix {
+        let (rows, cols) = matrix_rows_and_cols(&self);
+        let mut rows = Vec::with_capacity(rows);
+        for row in self.0.iter() {
+            let mut cols = Vec::with_capacity(cols);
+            for value in row.iter() {
+                cols.push(sigmoid(*value));
+            }
+            rows.push(cols);
+        }
+        Matrix(rows)
+    }
+
+    pub fn one_minus_all_values(self) -> Matrix {
+        let (rows, cols) = matrix_rows_and_cols(&self);
+        let mut rows = Vec::with_capacity(rows);
+        for row in self.0.into_iter() {
+            let mut cols = Vec::with_capacity(cols);
+            for value in row.into_iter() {
+                cols.push(1.0 - value);
+            }
+            rows.push(cols);
+        }
+        Matrix(rows)
+    }
+
     /// Transpose:
     /// In linear algebra, the transpose of a matrix is an operator which flips a matrix over its diagonal,
     /// that is it switches the row and column indices of the matrix by producing another matrix denoted
@@ -151,14 +199,10 @@ impl Matrix {
     }
 }
 
-fn sigmoid(input: &f64) -> f64 {
+fn sigmoid(input: f64) -> f64 {
     /// Euler's number (e)
     let e: f64 = std::f64::consts::E;
     1.0 / (1.0 + e.powf(-input))
-}
-
-fn derivative_of_sigmoid(input: &f64) -> f64 {
-    sigmoid(input) * (1.0 - sigmoid(input))
 }
 
 fn matrix_rows_and_cols(matrix: &Matrix) -> (usize, usize) {
@@ -305,11 +349,6 @@ mod tests {
 
     #[test]
     fn testing_sigmoid() {
-        assert_eq!(sigmoid(&3.0), 0.9525741268224331);
-    }
-
-    #[test]
-    fn testing_derivative_of_sigmoid() {
-        assert_eq!(derivative_of_sigmoid(&3.0), 0.0451766597309122);
+        assert_eq!(sigmoid(3.0), 0.9525741268224331);
     }
 }

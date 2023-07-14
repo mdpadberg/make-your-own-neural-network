@@ -6,11 +6,11 @@ use super::layer::Layer;
 
 #[derive(Debug)]
 pub struct NeuralNetwork {
-    layers: Vec<Layer>,
-    amount_of_input_neurons: u32,
-    amount_of_hidden_neurons: u32,
-    amount_of_output_neurons: u32,
-    amount_of_hidden_layers: u32,
+    pub(crate) layers: Vec<Layer>,
+    pub(crate) amount_of_input_neurons: u32,
+    pub(crate) amount_of_hidden_neurons: u32,
+    pub(crate) amount_of_output_neurons: u32,
+    pub(crate) amount_of_hidden_layers: u32,
 }
 
 impl NeuralNetwork {

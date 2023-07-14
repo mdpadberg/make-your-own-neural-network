@@ -10,11 +10,7 @@ pub struct Feedforward {
 }
 
 impl Feedforward {
-    pub(crate) fn new(results: Vec<Matrix>) -> Feedforward {
-        Feedforward { results }
-    }
-
-    pub fn run(neural_network: NeuralNetwork, input_data: &Vec<f64>) -> Result<Feedforward> {
+    pub(crate) fn run(neural_network: NeuralNetwork, input_data: &Vec<f64>) -> Result<Feedforward> {
         ensure!(
             neural_network.amount_of_input_neurons() == &(input_data.len() as u32),
             "Feedforward: The input data should have the same size as the amount of input neurons"
@@ -37,7 +33,7 @@ impl Feedforward {
             .len() as u32) == neural_network.amount_of_output_neurons(),
             "Feedforward: Result of output layer should be of same size as amount of output neurons"
         );
-        Ok(Feedforward { results: vec![] })
+        Ok(feedforward)
     }
 
     pub fn results(&self) -> &Vec<Matrix> {
@@ -50,17 +46,17 @@ impl Feedforward {
 /// through the whole neural network. This way you can see how much each layer contributed to
 /// the end result of the neural network
 fn calculate_results_per_layer(layers: &Vec<Layer>, input_data: Matrix) -> Result<Feedforward> {
-    let mut result: Vec<Matrix> = vec![];
+    let mut result: Vec<Matrix> = vec![input_data.clone()];
     for layer in layers {
         let result_from_last_layer = if result.is_empty() {
             &input_data
         } else {
             result.last().context("Feedforward: No last layer")?
         };
-        let mut result_from_current_layer: Matrix = layer
+        let result_from_current_layer: Matrix = layer
             .get_matrix_as_ref()
-            .matrix_multiplication(result_from_last_layer)?;
-        result_from_current_layer.apply_activation_function();
+            .multiply(result_from_last_layer)?
+            .apply_activation_function();
         result.push(result_from_current_layer);
     }
     Ok(Feedforward { results: result })
@@ -101,6 +97,11 @@ mod tests {
         )
         .unwrap();
         let expected_result = vec![
+            Matrix::new(vec![
+                vec![0.9],
+                vec![0.1],
+                vec![0.8],
+            ]),
             Matrix::new(vec![
                 vec![0.7613327148429104],
                 vec![0.6034832498647263],
@@ -145,6 +146,11 @@ mod tests {
         )
         .unwrap();
         let expected_result = vec![
+            Matrix::new(vec![
+                vec![0.1],
+                vec![0.2],
+                vec![0.3],
+            ]),
             Matrix::new(vec![
                 vec![0.8115326747861805],
                 vec![0.8205384805926733],

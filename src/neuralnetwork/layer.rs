@@ -1,6 +1,6 @@
 use crate::matrix::matrix::Matrix;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Layer(Matrix);
 
 impl Layer {
