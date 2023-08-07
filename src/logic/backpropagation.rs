@@ -4,7 +4,7 @@ use crate::neuralnetwork::layer::Layer;
 use anyhow::{Context, Result};
 
 #[derive(Debug)]
-pub struct Backpropagation {
+pub(crate) struct Backpropagation {
     new_layers: Vec<Layer>,
 }
 
