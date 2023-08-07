@@ -1,7 +1,6 @@
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
-
 pub(crate) struct Matrix(pub(crate) Vec<Vec<f64>>);
 
 impl Matrix {
@@ -36,13 +35,13 @@ impl Matrix {
         Matrix(rows)
     }
 
-    pub(crate) fn one_minus_all_values(self) -> Matrix {
+    pub(crate) fn derivative_of_sigmoid(&self) -> Matrix {
         let (rows, cols) = matrix_rows_and_cols(&self);
         let mut rows = Vec::with_capacity(rows);
-        for row in self.0.into_iter() {
+        for row in self.0.iter() {
             let mut cols = Vec::with_capacity(cols);
             for value in row.into_iter() {
-                cols.push(1.0 - value);
+                cols.push(value * (1.0 - value));
             }
             rows.push(cols);
         }

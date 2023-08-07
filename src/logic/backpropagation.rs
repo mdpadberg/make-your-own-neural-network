@@ -62,13 +62,12 @@ fn new_weights_based_on_error_rate_and_gradient_descent(
 ) -> Result<Vec<Layer>> {
     let mut new_layers = vec![];
     for (i, layer) in layers.iter().enumerate() {
-        let weight_adjustments = (((error_rate_per_layer.0[i].clone()
-            * &feedforward.results[i + 1])?
-            * &feedforward.results[i + 1].clone().one_minus_all_values())?
-            * &feedforward.results[i].transpose())?
-            * learning_rate;
-        let old_layer_matrix = layer.0.to_owned();
-        let new_matrix = (old_layer_matrix + weight_adjustments)?;
+        let weight_adjustments = learning_rate
+            * ((&error_rate_per_layer.0[i]
+                * &feedforward.results[i + 1].derivative_of_sigmoid())?
+                * &feedforward.results[i].transpose())?;
+        let old_layer_matrix = &layer.0;
+        let new_matrix = (old_layer_matrix + &weight_adjustments)?;
         new_layers.push(Layer(new_matrix));
     }
     Ok(new_layers)
@@ -271,8 +270,8 @@ mod tests {
             // input to hidden weights
             Layer(Matrix(vec![
                 vec![1.6230841920849253, 3.1461683841698505, 4.669252576254776],
-                vec![2.0923728075635353, 3.984745615127071, 5.8771184226906055],
-                vec![2.532141826921572, 4.764283653843144, 6.9964254807647155],
+                vec![2.0923728075635353, 3.9847456151270704, 5.8771184226906055],
+                vec![2.5321418269215714, 4.764283653843143, 6.9964254807647155],
                 vec![2.9430477971611615, 5.4860955943223235, 8.029143391483483],
             ])),
             // hidden to hidden weights

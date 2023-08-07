@@ -84,16 +84,16 @@ impl Mul<&Matrix> for &Matrix {
     }
 }
 
-impl Mul<&f64> for Matrix {
+impl Mul<Matrix> for &f64 {
     type Output = Matrix;
 
-    fn mul(self, rhs: &f64) -> Self::Output {
-        let (amount_of_rows, amount_of_cols) = matrix_rows_and_cols(&self);
+    fn mul(self, rhs: Matrix) -> Self::Output {
+        let (amount_of_rows, amount_of_cols) = matrix_rows_and_cols(&rhs);
         let mut rows: Vec<Vec<f64>> = Vec::with_capacity(amount_of_rows as usize);
         for i in 0..amount_of_rows {
             let mut cols: Vec<f64> = Vec::with_capacity(amount_of_cols as usize);
             for j in 0..amount_of_cols {
-                cols.push(self.0[i][j] * rhs)
+                cols.push(self * rhs.0[i][j])
             }
             rows.push(cols);
         }
