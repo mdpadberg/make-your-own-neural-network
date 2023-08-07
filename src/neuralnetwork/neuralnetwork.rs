@@ -1,8 +1,6 @@
-use anyhow::Result;
-
-use crate::matrix::matrix::Matrix;
-
 use super::layer::Layer;
+use crate::matrix::matrix::Matrix;
+use anyhow::Result;
 
 #[derive(Debug)]
 pub struct NeuralNetwork {
@@ -20,34 +18,19 @@ impl NeuralNetwork {
         amount_of_output_neurons: u32,
         amount_of_hidden_layers: u32,
     ) -> NeuralNetwork {
-        let mut neural_network = NeuralNetwork {
-            layers: vec![],
+        let mut layers = Vec::with_capacity(amount_of_hidden_layers as usize + 2);
+        layers.push(create_input_layer(amount_of_hidden_neurons, amount_of_input_neurons));
+        for layer in create_hidden_layers(amount_of_hidden_layers, amount_of_hidden_neurons) {
+            layers.push(layer);
+        }
+        layers.push(create_output_layer(amount_of_output_neurons, amount_of_hidden_neurons));
+        NeuralNetwork {
+            layers,
             amount_of_input_neurons,
             amount_of_hidden_neurons,
             amount_of_output_neurons,
             amount_of_hidden_layers,
-        };
-        neural_network
-            .layers
-            .push(Layer::new(Matrix::new_with_random_values(
-                amount_of_hidden_neurons,
-                amount_of_input_neurons,
-            )));
-        for _ in 0..amount_of_hidden_layers {
-            neural_network
-                .layers
-                .push(Layer::new(Matrix::new_with_random_values(
-                    amount_of_hidden_neurons,
-                    amount_of_hidden_neurons,
-                )));
         }
-        neural_network
-            .layers
-            .push(Layer::new(Matrix::new_with_random_values(
-                amount_of_output_neurons,
-                amount_of_hidden_neurons,
-            )));
-        neural_network
     }
 
     pub fn query(&self) -> Result<()> {
@@ -57,26 +40,32 @@ impl NeuralNetwork {
     pub fn train() -> Result<()> {
         Ok(())
     }
+}
 
-    pub fn layers(&self) -> &Vec<Layer> {
-        &self.layers
-    }
+fn create_input_layer(amount_of_hidden_neurons: u32, amount_of_input_neurons: u32) -> Layer {
+    Layer(Matrix::new_with_random_values(
+        amount_of_hidden_neurons,
+        amount_of_input_neurons,
+    ))
+}
 
-    pub fn amount_of_input_neurons(&self) -> &u32 {
-        &self.amount_of_input_neurons
-    }
+fn create_hidden_layers(amount_of_hidden_layers: u32, amount_of_hidden_neurons: u32) -> Vec<Layer> {
+    (0..amount_of_hidden_layers)
+        .into_iter()
+        .map(|_| {
+            Layer(Matrix::new_with_random_values(
+                amount_of_hidden_neurons,
+                amount_of_hidden_neurons,
+            ))
+        })
+        .collect::<Vec<Layer>>()
+}
 
-    pub fn amount_of_hidden_neurons(&self) -> &u32 {
-        &self.amount_of_hidden_neurons
-    }
-
-    pub fn amount_of_output_neurons(&self) -> &u32 {
-        &self.amount_of_output_neurons
-    }
-
-    pub fn amount_of_hidden_layers(&self) -> &u32 {
-        &self.amount_of_hidden_layers
-    }
+fn create_output_layer(amount_of_output_neurons: u32, amount_of_hidden_neurons: u32) -> Layer {
+    Layer(Matrix::new_with_random_values(
+        amount_of_output_neurons,
+        amount_of_hidden_neurons,
+    ))
 }
 
 #[cfg(test)]
@@ -91,16 +80,16 @@ mod test {
         assert_eq!(nn.amount_of_output_neurons, 3);
         assert_eq!(nn.amount_of_hidden_layers, 2);
         assert_eq!(nn.layers.len(), 4);
-        let input_layer = nn.layers[0].get_matrix_as_ref().get_data_as_ref();
+        let input_layer = &nn.layers[0].0.0;
         assert_eq!(input_layer.len(), 4);
         assert_eq!(input_layer[0].len(), 3);
-        let hidden_layer_1 = nn.layers[1].get_matrix_as_ref().get_data_as_ref();
+        let hidden_layer_1 = &nn.layers[1].0.0;
         assert_eq!(hidden_layer_1.len(), 4);
         assert_eq!(hidden_layer_1[0].len(), 4);
-        let hidden_layer_2 = nn.layers[2].get_matrix_as_ref().get_data_as_ref();
+        let hidden_layer_2 = &nn.layers[2].0.0;
         assert_eq!(hidden_layer_2.len(), 4);
         assert_eq!(hidden_layer_2[0].len(), 4);
-        let output_layer = nn.layers[3].get_matrix_as_ref().get_data_as_ref();
+        let output_layer = &nn.layers[3].0.0;
         assert_eq!(output_layer.len(), 3);
         assert_eq!(output_layer[0].len(), 4);
     }
