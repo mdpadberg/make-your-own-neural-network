@@ -1,7 +1,7 @@
 use crate::logic::feedforward::Feedforward;
 use crate::matrix::matrix::Matrix;
 use crate::neuralnetwork::layer::Layer;
-use anyhow::{Context, Result};
+use anyhow::{ensure, Context, Result};
 
 #[derive(Debug)]
 pub(crate) struct Backpropagation {
@@ -12,28 +12,53 @@ pub(crate) struct Backpropagation {
 struct ErrorRatePerLayer(Vec<Matrix>);
 
 impl Backpropagation {
-    pub(crate) fn run(target: &Vec<f64>, layers: &Vec<Layer>, feedforward: &Feedforward) {}
-}
-
-/// calculate_error_rate_per_layer:
-/// This method returns the error rate per layer, by calculating the error rate from the
-/// output layer (target - actual). Then going through each layer from the back to the front,
-/// while skipping the input layer. This way you can see how much each layer contributed to
-/// the error rate of the neural network
-fn calculate_error_rate_per_layer(
-    target: &Matrix,
-    actual: &Matrix,
-    layers: &Vec<Layer>,
-) -> Result<ErrorRatePerLayer> {
-    let mut result: Vec<Matrix> = vec![error_rate_from_last_layer(&target, &actual)?];
-    for layer in layers.iter().skip(1).rev() {
-        let result_from_last_processed_layer =
-            result.last().context("Backpropagation: No last layer")?;
-        let current_matrix = layer.0.transpose();
-        result.push((current_matrix * result_from_last_processed_layer)?);
+    pub(crate) fn run(
+        learning_rate: &f64,
+        layers: &Vec<Layer>,
+        target: &Vec<f64>,
+        feedforward: &Feedforward,
+    ) -> Result<Backpropagation> {
+        let target = Matrix::from_vec(target);
+        let actual = feedforward
+            .results
+            .last()
+            .context("Backpropagation: feedforward has no last")?;
+        ensure!(
+            target.same_size(actual),
+            "Backpropagation: actual and target should be of same size"
+        );
+        ensure!(
+            target.same_size(
+                &layers
+                    .last()
+                    .context("Backpropagation: layers has no last")?
+                    .0
+            ),
+            "Backpropagation: actual and target should be of same size"
+        );
+        ensure!(
+            layers.len() == feedforward.results.len(),
+            "Backpropagation: layers and feedforward should be of same size"
+        );
+        for (i, layer) in layers.iter().enumerate() {
+            ensure!(
+                feedforward
+                    .results
+                    .get(i)
+                    .context(format!("Backpropagation: feedforward has no {}", i))?
+                    .same_size(&layer.0),
+                "Backpropagation: layers and feedforward should be of same size"
+            );
+        }
+        Ok(Backpropagation {
+            new_layers: new_weights_based_on_error_rate_and_gradient_descent(
+                learning_rate,
+                layers,
+                feedforward,
+                &calculate_error_rate_per_layer(&target, actual, layers)?,
+            )?,
+        })
     }
-    result.reverse();
-    Ok(ErrorRatePerLayer(result))
 }
 
 /// new_weights_based_on_error_rate_and_gradient_descent
@@ -56,8 +81,8 @@ fn calculate_error_rate_per_layer(
 ///  OiT = output of input layer after activation function transposed
 fn new_weights_based_on_error_rate_and_gradient_descent(
     learning_rate: &f64,
-    feedforward: &Feedforward,
     layers: &Vec<Layer>,
+    feedforward: &Feedforward,
     error_rate_per_layer: &ErrorRatePerLayer,
 ) -> Result<Vec<Layer>> {
     let mut new_layers = vec![];
@@ -71,6 +96,27 @@ fn new_weights_based_on_error_rate_and_gradient_descent(
         new_layers.push(Layer(new_matrix));
     }
     Ok(new_layers)
+}
+
+/// calculate_error_rate_per_layer:
+/// This method returns the error rate per layer, by calculating the error rate from the
+/// output layer (target - actual). Then going through each layer from the back to the front,
+/// while skipping the input layer. This way you can see how much each layer contributed to
+/// the error rate of the neural network
+fn calculate_error_rate_per_layer(
+    target: &Matrix,
+    actual: &Matrix,
+    layers: &Vec<Layer>,
+) -> Result<ErrorRatePerLayer> {
+    let mut result: Vec<Matrix> = vec![error_rate_from_last_layer(&target, &actual)?];
+    for layer in layers.iter().skip(1).rev() {
+        let result_from_last_processed_layer =
+            result.last().context("Backpropagation: No last layer")?;
+        let current_matrix = layer.0.transpose();
+        result.push((current_matrix * result_from_last_processed_layer)?);
+    }
+    result.reverse();
+    Ok(ErrorRatePerLayer(result))
 }
 
 fn error_rate_from_last_layer(target: &Matrix, actual: &Matrix) -> Result<Matrix> {
@@ -325,8 +371,8 @@ mod tests {
         ];
         let actual = new_weights_based_on_error_rate_and_gradient_descent(
             &0.3,
-            &feedforward,
             &layers,
+            &feedforward,
             &error_rate_per_layer,
         )
         .unwrap();

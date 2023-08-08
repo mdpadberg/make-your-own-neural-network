@@ -17,7 +17,7 @@ impl Feedforward {
         );
         let feedforward = calculate_results_per_layer(
             &neural_network.layers,
-            transform_input_data_to_matrix(input_data),
+            Matrix::from_vec(input_data),
         )?;
         ensure!((feedforward.results
             .get(1)
@@ -56,15 +56,6 @@ fn calculate_results_per_layer(layers: &Vec<Layer>, input_data: Matrix) -> Resul
     Ok(Feedforward { results: result })
 }
 
-fn transform_input_data_to_matrix(input_data: &Vec<f64>) -> Matrix {
-    Matrix(
-        input_data
-            .into_iter()
-            .map(|value| vec![*value])
-            .collect::<Vec<Vec<f64>>>(),
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,7 +78,7 @@ mod tests {
                     vec![0.8, 0.1, 0.9],
                 ])),
             ],
-            transform_input_data_to_matrix(&input),
+            Matrix::from_vec(&input),
         )
         .unwrap();
         let expected_result = vec![
@@ -132,7 +123,7 @@ mod tests {
                     vec![1.3, 2.3, 3.3, 4.3],
                 ])),
             ],
-            transform_input_data_to_matrix(&input),
+            Matrix::from_vec(&input),
         )
         .unwrap();
         let expected_result = vec![

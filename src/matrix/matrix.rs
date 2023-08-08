@@ -18,6 +18,28 @@ impl Matrix {
         Matrix(rows)
     }
 
+    // This function creates a matrix from an one dimensional vector
+    pub(crate) fn from_vec(data: &Vec<f64>) -> Matrix {
+        Matrix(
+            data.into_iter()
+                .map(|value| vec![*value])
+                .collect::<Vec<Vec<f64>>>(),
+        )
+    }
+
+    // Check if matrices are of same size
+    pub(crate) fn same_size(&self, matrix: &Matrix) -> bool {
+        if self.0.len() != matrix.0.len() {
+            return false;
+        }
+        for (i, values_in_row) in self.0.iter().enumerate() {
+            if matrix.0.get(i).is_some() && values_in_row.len() != matrix.0.get(i).unwrap().len() {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /// Sigmoid function:
     /// A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve.
     /// Sigmoid functions have domain of all real numbers, with return value monotonically increasing most often
@@ -107,8 +129,78 @@ mod tests {
 
     #[test]
     fn testing_matrix_rows_and_cols() {
-        let (rows, cols) = matrix_rows_and_cols(&Matrix(vec![vec![1.0, 3.0, 5.0], vec![2.0, 4.0, 6.0]]));
+        let (rows, cols) =
+            matrix_rows_and_cols(&Matrix(vec![vec![1.0, 3.0, 5.0], vec![2.0, 4.0, 6.0]]));
         assert_eq!(rows, 2);
         assert_eq!(cols, 3);
+    }
+
+    #[test]
+    fn testing_same_size_1() {
+        assert_eq!(
+            true,
+            Matrix(vec![vec![1.0, 2.0], vec![3.0, 4.0], vec![5.0, 6.0]]).same_size(&Matrix(vec![
+                vec![7.0, 8.0],
+                vec![9.0, 10.0],
+                vec![11.0, 12.0]
+            ]))
+        );
+    }
+
+    #[test]
+    fn testing_same_size_2() {
+        assert_eq!(
+            false,
+            Matrix(vec![vec![1.0, 2.0], vec![4.0], vec![5.0, 6.0]]).same_size(&Matrix(vec![
+                vec![7.0, 8.0],
+                vec![9.0, 10.0],
+                vec![11.0, 12.0]
+            ]))
+        );
+
+        assert_eq!(
+            false,
+            Matrix(vec![vec![1.0, 2.0], vec![3.0, 4.0], vec![5.0, 6.0]]).same_size(&Matrix(vec![
+                vec![7.0, 8.0],
+                vec![9.0],
+                vec![11.0, 12.0]
+            ]))
+        );
+
+        assert_eq!(
+            false,
+            Matrix(vec![vec![1.0, 2.0], vec![5.0, 6.0]]).same_size(&Matrix(vec![
+                vec![7.0, 8.0],
+                vec![9.0, 10.0],
+                vec![11.0, 12.0]
+            ]))
+        );
+
+        assert_eq!(
+            false,
+            Matrix(vec![
+                vec![1.0, 2.0],
+                vec![3.0, 4.0],
+                vec![5.0, 6.0]
+            ])
+            .same_size(&Matrix(vec![
+                vec![7.0, 8.0],
+                vec![9.0, 10.0]
+            ]))
+        );
+
+        assert_eq!(
+            false,
+            Matrix(vec![vec![1.0, 2.0], vec![3.0, 4.0], vec![5.0, 6.0, 7.0]]).same_size(&Matrix(
+                vec![vec![7.0, 8.0], vec![9.0, 10.0], vec![11.0, 12.0]]
+            ))
+        );
+
+        assert_eq!(
+            false,
+            Matrix(vec![vec![1.0, 2.0], vec![3.0, 4.0], vec![5.0, 6.0]]).same_size(&Matrix(
+                vec![vec![7.0, 8.0], vec![9.0, 10.0], vec![11.0, 12.0, 13.0]]
+            ))
+        );
     }
 }
