@@ -10,7 +10,7 @@ pub(crate) struct Feedforward {
 }
 
 impl Feedforward {
-    pub(crate) fn run(neural_network: NeuralNetwork, input_data: &Vec<f64>) -> Result<Feedforward> {
+    pub(crate) fn run(neural_network: &NeuralNetwork, input_data: &Vec<f64>) -> Result<Feedforward> {
         ensure!(
             neural_network.amount_of_input_neurons == (input_data.len() as u32),
             "Feedforward: The input data should have the same size as the amount of input neurons"
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn test_input_ensure() {
-        let result = Feedforward::run(NeuralNetwork::new(3, 3, 3, 1), &vec![0.0]);
+        let result = Feedforward::run(&NeuralNetwork::new_with_random_values(3, 3, 3, 1), &vec![0.0]);
         assert_eq!(result.is_err(), true);
         let error = result.unwrap_err();
         let mut chain = error.chain();

@@ -5,7 +5,7 @@ use anyhow::{ensure, Context, Result};
 
 #[derive(Debug)]
 pub(crate) struct Backpropagation {
-    new_layers: Vec<Layer>,
+    pub(crate) new_layers: Vec<Layer>,
 }
 
 #[derive(Debug)]
@@ -28,28 +28,19 @@ impl Backpropagation {
             "Backpropagation: actual and target should be of same size"
         );
         ensure!(
-            target.same_size(
-                &layers
+            &target.0.len()
+                == &layers
                     .last()
                     .context("Backpropagation: layers has no last")?
                     .0
-            ),
-            "Backpropagation: actual and target should be of same size"
+                     .0
+                    .len(),
+            "Backpropagation: target and last layer should be of same size"
         );
         ensure!(
-            layers.len() == feedforward.results.len(),
+            layers.len() != feedforward.results.len(),
             "Backpropagation: layers and feedforward should be of same size"
         );
-        for (i, layer) in layers.iter().enumerate() {
-            ensure!(
-                feedforward
-                    .results
-                    .get(i)
-                    .context(format!("Backpropagation: feedforward has no {}", i))?
-                    .same_size(&layer.0),
-                "Backpropagation: layers and feedforward should be of same size"
-            );
-        }
         Ok(Backpropagation {
             new_layers: new_weights_based_on_error_rate_and_gradient_descent(
                 learning_rate,
@@ -281,7 +272,7 @@ mod tests {
         )
         .unwrap();
         let feedforward = Feedforward::run(
-            NeuralNetwork {
+            &NeuralNetwork {
                 layers: vec![
                     // input to hidden weights
                     Layer(Matrix(vec![

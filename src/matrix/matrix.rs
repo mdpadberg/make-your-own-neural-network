@@ -1,7 +1,7 @@
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) struct Matrix(pub(crate) Vec<Vec<f64>>);
+pub struct Matrix(pub Vec<Vec<f64>>);
 
 impl Matrix {
     /// This function creates a matrix with random values an y amount of rows and an x amount of cols
@@ -57,6 +57,7 @@ impl Matrix {
         Matrix(rows)
     }
 
+    /// Derivative of Sigmoid function = sigmoid(input) * (1 - sigmoid(input))
     pub(crate) fn derivative_of_sigmoid(&self) -> Matrix {
         let (rows, cols) = matrix_rows_and_cols(&self);
         let mut rows = Vec::with_capacity(rows);
