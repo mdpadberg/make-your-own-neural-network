@@ -11,7 +11,12 @@ impl Matrix {
         for _ in 0..amount_of_rows {
             let mut cols: Vec<f64> = Vec::with_capacity(amount_of_cols as usize);
             for _ in 0..amount_of_cols {
-                cols.push(rng.gen());
+                let value: f64 = if rng.gen() {
+                    rng.gen::<f64>() * -1.0
+                } else {
+                    rng.gen()
+                };
+                cols.push(value);
             }
             rows.push(cols);
         }
@@ -98,7 +103,7 @@ pub(crate) fn matrix_rows_and_cols(matrix: &Matrix) -> (usize, usize) {
 }
 
 fn sigmoid(input: f64) -> f64 {
-    /// Euler's number (e)
+    // Euler's number (e)
     let e: f64 = std::f64::consts::E;
     1.0 / (1.0 + e.powf(-input))
 }

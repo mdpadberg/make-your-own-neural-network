@@ -1,3 +1,5 @@
 pub mod neuralnetwork;
 pub mod layer;
-pub mod trainingdata;
+pub mod training;
+pub mod errorrate;
+pub mod query;

@@ -1,2 +1,2 @@
-pub mod feedforward;
-pub mod backpropagation;
+pub(crate) mod feedforward;
+pub(crate) mod backpropagation;
