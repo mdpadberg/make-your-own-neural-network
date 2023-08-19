@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "lib",
-    "example-usage"
+    "core",
+    "example-usage",
+    "wasm"
 ]
