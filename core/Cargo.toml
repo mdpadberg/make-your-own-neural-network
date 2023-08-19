@@ -1,5 +1,5 @@
 [package]
-name = "lib"
+name = "core"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
+getrandom = { version = "0.2", features = ["js"] }
 anyhow = "1.0.68"
+serde = { version = "1.0.183", features = ["derive"] }

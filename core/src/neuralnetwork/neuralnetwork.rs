@@ -9,8 +9,9 @@ use crate::{
     matrix::matrix::Matrix,
 };
 use anyhow::{ensure, Context, Result};
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NeuralNetwork {
     pub layers: Vec<Layer>,
     pub amount_of_input_neurons: u32,
