@@ -8,6 +8,10 @@
 
 <body>
     <div style="margin-top:1em;">
+        <div>
+            <p>Download this pre trained neural network:</p>
+            <a href="example-nn.txt" download="example-nn.txt">Neural network 1</a>
+        </div>
         <form id="upload-neural-network">
             <div style="margin-top:1em;">
                 <p>Upload a trained neural network:</p>
@@ -30,6 +34,10 @@
                 <input id="submitbutton" type="submit" value="Submit">
             </div>
         </form>
+        <div style="margin-top:1em">
+            <table id="resulttable">
+            </table>
+        </div>
     </div>
     <script async src="./wasm.js" type="module"></script>
     <script async src="./canvas.js" type="module"></script>

@@ -1,6 +1,6 @@
 import { query } from "./pkg/wasm.js";
 
-document.getElementById('submitbutton').addEventListener('click', submit)
+document.getElementById('submitbutton').addEventListener('click', submit);
 
 function submit(event) {
     event.preventDefault();
@@ -11,7 +11,13 @@ function submit(event) {
     reader.onload = (function (f) {
         return function (e) {
             const neuralnetworkAsText = e.target.result;
-            console.log(query(neuralnetworkAsText, drawing));
+            const result = query(neuralnetworkAsText, drawing);
+            const resulttable = document.getElementById("resulttable");
+            let tabledata = "<tr><td>Number</td><td>%</td></tr>";
+            for(var i = 0; i < result.length; i++) {
+                tabledata += `<tr><td>${i}</td><td>${result[i]}</td></tr>`;
+            };
+            resulttable.innerHTML = tabledata;
         };
     })(neuralnetwork);
 }
