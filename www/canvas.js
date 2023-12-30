@@ -25,7 +25,7 @@ function penTool(e) {
     const newY = e.clientY - y;
 
     context.beginPath();
-    context.lineWidth = 1;
+    context.lineWidth = 3;
     context.moveTo(lastX, lastY);
     context.lineTo(newX, newY);
     context.strokeStyle = "black";
