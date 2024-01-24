@@ -2,6 +2,7 @@ use crate::base64_png::Base64Png;
 use image::EncodableLayout;
 use std::convert::TryFrom;
 
+#[derive(Debug)]
 pub(crate) struct NeuralNetworkImage(pub(crate) Vec<f64>);
 
 impl TryFrom<Base64Png> for NeuralNetworkImage {

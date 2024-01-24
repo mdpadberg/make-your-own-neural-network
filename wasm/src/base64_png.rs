@@ -3,6 +3,7 @@ use anyhow::Context;
 use image::{DynamicImage, ImageBuffer, ImageOutputFormat, Luma};
 use std::{convert::TryFrom, io::Cursor};
 
+#[derive(Debug)]
 pub(crate) struct Base64Png(pub(crate) String);
 
 impl TryFrom<MnistImage> for Base64Png {
