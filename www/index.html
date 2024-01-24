@@ -4,44 +4,34 @@
 <head>
     <meta charset="utf-8">
     <title>Neuralnetwork</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
     <div style="margin-top:1em;">
-        <div>
-            <p>Download this pre trained neural network:</p>
-            <a href="example-nn.txt" download="example-nn.txt">Neural network 1</a>
-        </div>
-        <form id="upload-neural-network">
-            <div style="margin-top:1em;">
-                <p>Upload a trained neural network:</p>
-                <input 
-                    id="uploadInput" 
-                    type="file"
-                    accept="text/plain">
-            </div>
-            <div style="margin-top:1em;">
-                <p>Draw a number between 0 and 9:</p>
-                <canvas 
-                    id="canvas" 
-                    height="28" 
-                    width="28" 
-                    style="border: 1px solid black; background-color: white;">
-                        Your browser does not support the HTML5 canvas tag.
-                </canvas>
-            </div>
-            <div style="margin-top:1em;">
-                <input id="submitbutton" type="submit" value="Submit">
-            </div>
-        </form>
-        <div style="margin-top:1em">
-            <table id="resulttable">
-            </table>
-        </div>
+        <p>Click on refresh button and get 3 random images from the mnist verification dataset</p>
     </div>
+    <div style="margin-top:1em;">
+        <input id="get3images" type="submit" value="Refresh">
+    </div>
+    <div style="margin-top:1em;">
+        <label id="imageone">
+        </label>
+        <label id="imagetwo">
+        </label>
+        <label id="imagethree">
+        </label>
+    </div>
+    <div style="margin-top:1em;">
+        <input id="guess" type="submit" value="Guess">
+    </div>
+    <div style="margin-top:1em">
+        <table id="resulttable">
+        </table>
+    </div>
+
     <script async src="./wasm.js" type="module"></script>
-    <script async src="./canvas.js" type="module"></script>
-    <script async src="./form.js" type="module"></script>
+    <script async src="./index.js" type="module"></script>
 </body>
 
 </html>

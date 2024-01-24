@@ -1,8 +1,7 @@
 use core::neuralnetwork::neuralnetwork::NeuralNetwork;
 
-use anyhow::Context;
+static FILE: &'static [u8] = include_bytes!("./example-nn.txt");
 
-pub fn from_string_to_neuralnetwork(input: Option<String>) -> anyhow::Result<NeuralNetwork> {
-    let input = input.context("Rust from_string_to_neuralnetwork input string is empty")?;
-    Ok(serde_json::from_str(&input)?)
+pub(crate) fn from_file() -> anyhow::Result<NeuralNetwork> {
+    Ok(serde_json::from_str(&String::from_utf8(FILE.to_vec())?)?)
 }

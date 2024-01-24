@@ -1,31 +1,44 @@
+use crate::{
+    base64_png::Base64Png, mnist_image::MnistImage, neuralnetwork::from_file,
+    neuralnetwork_image::NeuralNetworkImage,
+};
 use core::neuralnetwork::query::{QueryData, QueryEntry};
-
-use crate::{image::from_string_to_f64_array, neuralnetwork::from_string_to_neuralnetwork};
+use std::convert::TryFrom;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 #[wasm_bindgen]
-pub fn query(neuralnetwork: JsValue, data: JsValue) -> Result<Vec<String>, JsValue> {
-    let user_drawing: Result<Vec<f64>, anyhow::Error> = from_string_to_f64_array(data.as_string());
-    let neuralnetwork = from_string_to_neuralnetwork(neuralnetwork.as_string());
-
-    match (user_drawing, neuralnetwork) {
-        (Ok(user_drawing), Ok(neuralnetwork)) => {
-            match neuralnetwork.query(&QueryData(&vec![QueryEntry {
-                input: user_drawing,
-            }])) {
-                Ok(ok) => {
-                    return Ok(ok
-                        .0
-                        .iter()
-                        .flat_map(|queryresult| {
-                            queryresult.0.iter().map(|result| result.to_string())
-                        })
-                        .collect::<Vec<String>>())
-                }
-                Err(err) => return Err(JsValue::from(format!("rust error in query: {:?}", err))),
-            };
+pub fn get_random_image() -> Result<String, JsValue> {
+    match Base64Png::try_from(MnistImage::get_random()) {
+        Ok(ok) => Ok(ok.0),
+        Err(err) => {
+            return Err(JsValue::from(format!(
+                "Rust error in get_3_random_images: {:?}",
+                err
+            )))
         }
-        (Err(err), _) => return Err(JsValue::from(format!("rust error in query: {:?}", err))),
-        (_, Err(err)) => return Err(JsValue::from(format!("rust error in query: {:?}", err))),
     }
+}
+
+#[wasm_bindgen]
+pub fn query_neuralnetwork(image: String) -> Result<Vec<String>, JsValue> {
+    match query_nn(image) {
+        Ok(ok) => Ok(ok),
+        Err(err) => {
+            return Err(JsValue::from(format!(
+                "Rust error in feed_to_neuralnetwork: {:?}",
+                err
+            )))
+        }
+    }
+}
+
+fn query_nn(image: String) -> anyhow::Result<Vec<String>> {
+    let nn = from_file()?;
+    let nn_image = NeuralNetworkImage::try_from(Base64Png(image))?;
+    let result = nn.query(&QueryData(&vec![QueryEntry { input: nn_image.0 }]))?;
+    Ok(result
+        .0
+        .iter()
+        .flat_map(|queryresult| queryresult.0.iter().map(|result| result.to_string()))
+        .collect::<Vec<String>>())
 }
