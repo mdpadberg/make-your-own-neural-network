@@ -12,7 +12,7 @@
         <p>Click on refresh button and get 3 random images from the mnist verification dataset</p>
     </div>
     <div style="margin-top:1em;">
-        <input id="get3images" type="submit" value="Refresh">
+        <input id="get3images" type="submit" value="Get images">
     </div>
     <div style="margin-top:1em;">
         <label id="imageone">
@@ -30,7 +30,11 @@
         </table>
     </div>
 
-    <script async src="./wasm.js" type="module"></script>
+    <div style="margin-top:1em;">
+        <p id="error-message-text"></p>
+    </div>
+
+    <script async src="./wasm-init.js" type="module"></script>
     <script async src="./index.js" type="module"></script>
 </body>
 

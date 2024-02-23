@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Neuralnetwork</title>
+    <link rel="stylesheet" href="train-nn.css">
+</head>
+
+<body>
+    <div style="margin-top:1em;">
+        <div id="margin-top:1em;">
+            <label for="hidden-neurons">Number of hidden neurons (10-100):</label>
+            <input type="number" id="hidden-neurons" name="hidden-neurons" min="10" max="100" value="10" />
+        </div>
+        <div id="margin-top:1em;">
+            <label for="training-rounds">Amount of training rounds (1-10):</label>
+            <input type="number" id="training-rounds" name="training-rounds" min="1" max="10" value="1" />
+        </div>
+        <div id="margin-top:1em;">
+            <label for="learning-rate">Learning rate (0.1-1.0):</label>
+            <input type="number" id="learning-rate" name="learning-rate" min="0.1" max="1.0" value="0.1" step=0.1 />
+        </div>
+        <input id="train-neural-network" type="submit" value="Train Neural network">
+    </div>
+
+    <div style="margin-top:1em;">
+        <p id="error-message-text"></p>
+    </div>
+
+    <script async src="./wasm-init.js" type="module"></script>
+    <script async src="./train-nn.js" type="module"></script>
+</body>
+
+</html>

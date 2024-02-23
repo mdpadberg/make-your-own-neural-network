@@ -1,7 +1,10 @@
+use crate::frontend_validation::FrontendValidation;
+use crate::neuralnetwork::{create, train};
 use crate::{
-    base64_png::Base64Png, mnist_image::MnistImage, neuralnetwork::from_file,
+    base64_png::Base64Png, mnist_image::MnistImage, neuralnetwork::load_pre_trained_neural_network,
     neuralnetwork_image::NeuralNetworkImage,
 };
+use anyhow::Context;
 use core::neuralnetwork::query::{QueryData, QueryEntry};
 use std::convert::TryFrom;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
@@ -10,37 +13,76 @@ use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 pub fn get_random_image() -> Result<String, JsValue> {
     match Base64Png::try_from(MnistImage::get_random()) {
         Ok(ok) => Ok(ok.0),
-        Err(err) => {
-            return Err(JsValue::from(format!(
-                "Rust error in get_3_random_images: {:?}",
-                err
-            )))
-        }
+        Err(err) => Err(JsValue::from(format!(
+            "Rust error in get_3_random_images: {:?}",
+            err
+        ))),
     }
 }
 
 #[wasm_bindgen]
-pub fn query_neuralnetwork(image: String) -> Result<Vec<String>, JsValue> {
+pub fn query_neuralnetwork(image: Option<String>) -> Result<Vec<String>, JsValue> {
     match query_nn(image) {
         Ok(ok) => Ok(ok),
-        Err(err) => {
-            return Err(JsValue::from(format!(
-                "Rust error in feed_to_neuralnetwork: {:?}",
-                err
-            )))
-        }
+        Err(err) => Err(JsValue::from(format!(
+            "Rust error in feed_to_neuralnetwork: {:?}",
+            err
+        ))),
     }
 }
 
-fn query_nn(image: String) -> anyhow::Result<Vec<String>> {
-    let nn = from_file()?;
-    let nn_image = NeuralNetworkImage::try_from(Base64Png(image))?;
-    let result = nn.query(&QueryData(&vec![QueryEntry { input: nn_image.0 }]))?;
+fn query_nn(image: Option<String>) -> anyhow::Result<Vec<String>> {
+    let image = image.context("query_nn: image is empty")?;
+    let neural_network = load_pre_trained_neural_network()
+        .context("query_nn: problem in load_pre_trained_neural_network")?;
+    let neural_network_image = NeuralNetworkImage::try_from(Base64Png(image))
+        .context("query_nn: cannot convert Base64Png to NeuralNetworkImage")?;
+    let result = neural_network
+        .query(&QueryData(&vec![QueryEntry {
+            input: neural_network_image.0,
+        }]))
+        .context("query_nn: error while querying")?;
     Ok(result
         .0
         .iter()
         .flat_map(|queryresult| queryresult.0.iter().map(|result| result.to_string()))
         .collect::<Vec<String>>())
+}
+
+#[wasm_bindgen]
+pub fn train_neuralnetwork(
+    amount_of_hidden_neurons: Option<i32>,
+    amount_of_training_rounds: Option<i32>,
+    learning_rate: Option<f64>,
+) -> Result<String, JsValue> {
+    match (
+        amount_of_hidden_neurons.frontend_validation(10, 100),
+        amount_of_training_rounds.frontend_validation(1, 10),
+        learning_rate.frontend_validation(0.1, 1.0),
+    ) {
+        (Err(err), _, _) => Err(JsValue::from(format!(
+            "Rust error in train_neuralnetwork: amount of hidden neurons is incorrect. {:?}",
+            err
+        ))),
+        (_, Err(err), _) => Err(JsValue::from(format!(
+            "Rust error in train_neuralnetwork: amount of training rounds is incorrect. {:?}",
+            err
+        ))),
+        (_, _, Err(err)) => Err(JsValue::from(format!(
+            "Rust error in train_neuralnetwork: value for learning rate is incorrect. {:?}",
+            err
+        ))),
+        (Ok(amount_of_hidden_neurons), Ok(amount_of_training_rounds), Ok(learning_rate)) => {
+            let neurel_network = create(amount_of_hidden_neurons);
+            match train(neurel_network, amount_of_training_rounds, learning_rate) {
+                Ok(ok) => Ok(ok),
+                Err(err) => Err(JsValue::from(format!(
+                    "Rust error in train_neuralnetwork: error during training {:?}",
+                    err
+                ))),
+            }
+        }
+    }
 }
 
 #[cfg(test)]

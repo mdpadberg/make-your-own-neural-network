@@ -1,7 +1,5 @@
-use crate::neuralnetwork_image::NeuralNetworkImage;
+use crate::{files::MNIST_VERIFICATION_IMAGES, neuralnetwork_image::NeuralNetworkImage};
 use rand::Rng;
-
-static IMAGES: &'static [u8] = include_bytes!("../../mnist-dataset/t10k-images.idx3-ubyte");
 
 #[derive(Debug, Clone)]
 pub(crate) struct MnistImage(pub(crate) Vec<u8>);
@@ -9,7 +7,7 @@ pub(crate) struct MnistImage(pub(crate) Vec<u8>);
 impl MnistImage {
     pub(crate) fn get_random() -> Self {
         //Skip first bytes, thats the meta data, check README.md inside the mnist-dataset folder
-        let all_images = &IMAGES[16..];
+        let all_images = &MNIST_VERIFICATION_IMAGES[16..];
         let mut rng = rand::thread_rng();
         MnistImage(
             all_images
@@ -31,7 +29,7 @@ impl From<NeuralNetworkImage> for MnistImage {
                 .0
                 .iter()
                 .map(|value| (((value - 0.01) / 0.99) * 255.0).round() as u8)
-                .collect::<Vec<u8>>()
+                .collect::<Vec<u8>>(),
         )
     }
 }
