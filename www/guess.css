@@ -17,10 +17,6 @@ label>img {
   object-fit: contain;
 }
 
-table tr td {
-  font-size: large;
-}
-
 /* HIDE RADIO */
 [type=radio] {
   position: absolute;
