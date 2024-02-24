@@ -24,3 +24,16 @@ This data is from:
 - Christopher J.C. Burges, Microsoft Research, Redmond
 
 For more information about the data and the license visit: [http://yann.lecun.com/exdb/mnist/](http://yann.lecun.com/exdb/mnist/)
+
+## Run locally  
+
+### Prerequisites
+- rust
+- rustup
+- cargo
+- wasm-bindgen
+
+### How to run this project locally
+1. run `./build.sh`
+2. run `./run.sh`
+3. visit `http://localhost:9000/`
