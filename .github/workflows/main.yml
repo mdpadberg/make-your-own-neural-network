@@ -1,0 +1,48 @@
+name: Build wasm code and deploy www folder to Github Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    name: deploy to github pages
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Install Rust with cargo
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+    # Install wasm-bindgen by downloading the executable (much faster than cargo install wasm-bindgen-cli, seconds vs minutes) 
+    - name: Download wasm-bindgen
+      uses: jetli/wasm-bindgen-action@v0.2.0
+      with:
+        version: '0.2.89'
+    - name: Build
+      shell: bash
+      run: |
+        cargo build -p wasm --target wasm32-unknown-unknown --release && \
+        wasm-bindgen target/wasm32-unknown-unknown/release/wasm.wasm --target web --out-dir www/pkg
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: 'www'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
