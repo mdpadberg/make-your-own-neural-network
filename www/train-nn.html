@@ -9,19 +9,24 @@
 
 <body>
     <div style="margin-top:1em;">
-        <div id="margin-top:1em;">
+        <p>On this page you can train your own neural network. Not recommended to run on low resource devices, because its a heavy operation and can take a few minutes</p>
+    </div>
+    <div style="margin-top:1em;">
+        <div style="margin-top:0.5em;">
             <label for="hidden-neurons">Number of hidden neurons (10-100):</label>
             <input type="number" id="hidden-neurons" name="hidden-neurons" min="10" max="100" value="10" />
         </div>
-        <div id="margin-top:1em;">
+        <div style="margin-top:0.5em;">
             <label for="training-rounds">Amount of training rounds (1-10):</label>
             <input type="number" id="training-rounds" name="training-rounds" min="1" max="10" value="1" />
         </div>
-        <div id="margin-top:1em;">
+        <div style="margin-top:0.5em;">
             <label for="learning-rate">Learning rate (0.1-1.0):</label>
             <input type="number" id="learning-rate" name="learning-rate" min="0.1" max="1.0" value="0.1" step=0.1 />
         </div>
-        <input id="train-neural-network" type="submit" value="Train Neural network">
+        <div style="margin-top:0.5em;">
+            <input id="train-neural-network" type="submit" value="Train Neural network">
+        </div>
     </div>
 
     <div style="margin-top:1em;">

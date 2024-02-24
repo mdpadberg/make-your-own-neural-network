@@ -3,6 +3,8 @@ use anyhow::Context;
 use image::{DynamicImage, ImageBuffer, ImageOutputFormat, Luma};
 use std::{convert::TryFrom, io::Cursor};
 
+/// This struct is used to convert a MnistImage to a base64 encoded png, so 
+/// it can be displayed in the frontend
 #[derive(Debug)]
 pub(crate) struct Base64Png(pub(crate) String);
 

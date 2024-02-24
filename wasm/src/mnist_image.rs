@@ -1,4 +1,7 @@
-use crate::{files::MNIST_VERIFICATION_IMAGES, neuralnetwork_image::NeuralNetworkImage};
+use crate::{
+    files::MNIST_TRAINING_IMAGES, files::MNIST_VERIFICATION_IMAGES,
+    neuralnetwork_image::NeuralNetworkImage,
+};
 use rand::Rng;
 
 #[derive(Debug, Clone)]
@@ -7,10 +10,9 @@ pub(crate) struct MnistImage(pub(crate) Vec<u8>);
 impl MnistImage {
     pub(crate) fn get_random() -> Self {
         //Skip first bytes, thats the meta data, check README.md inside the mnist-dataset folder
-        let all_images = &MNIST_VERIFICATION_IMAGES[16..];
         let mut rng = rand::thread_rng();
         MnistImage(
-            all_images
+            MNIST_VERIFICATION_IMAGES[16..]
                 .chunks(784)
                 // take a random image between 0 and 10000 (the size of the mnist verification dataset)
                 // if we skip 0 we take the first image for the dataset, if we skip 9999 we take the last image from the dataset
@@ -19,6 +21,14 @@ impl MnistImage {
                 .flat_map(|image| image.iter().map(|value| *value).collect::<Vec<u8>>())
                 .collect::<Vec<u8>>(),
         )
+    }
+
+    pub(crate) fn get_all_test_images() -> Vec<Self> {
+        //Skip first bytes, thats the meta data, check README.md inside the mnist-dataset folder
+        MNIST_TRAINING_IMAGES[16..]
+            .chunks(784)
+            .map(|image| MnistImage(image.iter().map(|value| *value).collect::<Vec<u8>>()))
+            .collect()
     }
 }
 

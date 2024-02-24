@@ -1,10 +1,9 @@
 use crate::frontend_validation::FrontendValidation;
-use crate::neuralnetwork::{create, train};
+use crate::neuralnetwork::{create, neural_network_from_string, neural_network_to_string, train};
 use crate::{
-    base64_png::Base64Png, mnist_image::MnistImage, neuralnetwork::load_pre_trained_neural_network,
-    neuralnetwork_image::NeuralNetworkImage,
+    base64_png::Base64Png, mnist_image::MnistImage, neuralnetwork_image::NeuralNetworkImage,
 };
-use anyhow::Context;
+use anyhow::{bail, Context};
 use core::neuralnetwork::query::{QueryData, QueryEntry};
 use std::convert::TryFrom;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
@@ -21,8 +20,11 @@ pub fn get_random_image() -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn query_neuralnetwork(image: Option<String>) -> Result<Vec<String>, JsValue> {
-    match query_nn(image) {
+pub fn query_neuralnetwork(
+    neuralnetwork_as_string: Option<String>,
+    image: Option<String>,
+) -> Result<Vec<String>, JsValue> {
+    match query_nn(neuralnetwork_as_string, image) {
         Ok(ok) => Ok(ok),
         Err(err) => Err(JsValue::from(format!(
             "Rust error in feed_to_neuralnetwork: {:?}",
@@ -31,10 +33,15 @@ pub fn query_neuralnetwork(image: Option<String>) -> Result<Vec<String>, JsValue
     }
 }
 
-fn query_nn(image: Option<String>) -> anyhow::Result<Vec<String>> {
+fn query_nn(
+    neuralnetwork_as_string: Option<String>,
+    image: Option<String>,
+) -> anyhow::Result<Vec<String>> {
     let image = image.context("query_nn: image is empty")?;
-    let neural_network = load_pre_trained_neural_network()
-        .context("query_nn: problem in load_pre_trained_neural_network")?;
+    let neuralnetwork_as_string =
+        neuralnetwork_as_string.context("query_nn: neuralnetwork_as_string is empty")?;
+    let neural_network = neural_network_from_string(neuralnetwork_as_string)
+        .context("query_nn: problem in neural_network_from_string")?;
     let neural_network_image = NeuralNetworkImage::try_from(Base64Png(image))
         .context("query_nn: cannot convert Base64Png to NeuralNetworkImage")?;
     let result = neural_network
@@ -55,32 +62,48 @@ pub fn train_neuralnetwork(
     amount_of_training_rounds: Option<i32>,
     learning_rate: Option<f64>,
 ) -> Result<String, JsValue> {
+    match train_nn(
+        amount_of_hidden_neurons,
+        amount_of_training_rounds,
+        learning_rate,
+    ) {
+        Ok(ok) => Ok(ok),
+        Err(err) => Err(JsValue::from(format!(
+            "Rust error in train_neuralnetwork: {:?}",
+            err
+        ))),
+    }
+}
+
+fn train_nn(
+    amount_of_hidden_neurons: Option<i32>,
+    amount_of_training_rounds: Option<i32>,
+    learning_rate: Option<f64>,
+) -> anyhow::Result<String> {
     match (
         amount_of_hidden_neurons.frontend_validation(10, 100),
         amount_of_training_rounds.frontend_validation(1, 10),
         learning_rate.frontend_validation(0.1, 1.0),
     ) {
-        (Err(err), _, _) => Err(JsValue::from(format!(
-            "Rust error in train_neuralnetwork: amount of hidden neurons is incorrect. {:?}",
+        (Err(err), _, _) => bail!(format!(
+            "train_nn: amount of hidden neurons is incorrect. {}",
             err
-        ))),
-        (_, Err(err), _) => Err(JsValue::from(format!(
-            "Rust error in train_neuralnetwork: amount of training rounds is incorrect. {:?}",
+        )),
+        (_, Err(err), _) => bail!(format!(
+            "train_nn: amount of training rounds is incorrect. {}",
             err
-        ))),
-        (_, _, Err(err)) => Err(JsValue::from(format!(
-            "Rust error in train_neuralnetwork: value for learning rate is incorrect. {:?}",
+        )),
+        (_, _, Err(err)) => bail!(format!(
+            "train_nn: value for learning rate is incorrect. {}",
             err
-        ))),
+        )),
         (Ok(amount_of_hidden_neurons), Ok(amount_of_training_rounds), Ok(learning_rate)) => {
-            let neurel_network = create(amount_of_hidden_neurons);
-            match train(neurel_network, amount_of_training_rounds, learning_rate) {
-                Ok(ok) => Ok(ok),
-                Err(err) => Err(JsValue::from(format!(
-                    "Rust error in train_neuralnetwork: error during training {:?}",
-                    err
-                ))),
-            }
+            let neural_network = create(amount_of_hidden_neurons);
+            let trained_neural_network =
+                train(neural_network, amount_of_training_rounds, learning_rate)
+                    .context("train_nn: error while training")?;
+            Ok(neural_network_to_string(&trained_neural_network)
+                .context("train_nn: error while converting to string")?)
         }
     }
 }
