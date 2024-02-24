@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>My neural network project</title>
+    <link rel="stylesheet" href="guess.css">
+</head>
+
+<body>
+    <div>
+        <p>On this page you can do a guessing game to see how good your neural network works. You can download a
+            pre-trained neural network <a href="pre-trained-nn.txt" download="pre-trained-nn.txt">here</a>. If you want
+            to train your own neural network, you can do that <a href="train-nn.html">here</a>.</p>
+    </div>
+    <div>
+        <p>Upload a trained neural network:</p>
+        <input id="uploadInput" type="file" accept="text/plain">
+    </div>
+    <div>
+        <p>Click on 'Get images' button and get 3 random images from the mnist verification dataset:</p>
+    </div>
+    <div>
+        <input id="get3images" type="submit" value="Get images">
+    </div>
+    <div>
+        <label id="imageone">
+        </label>
+        <label id="imagetwo">
+        </label>
+        <label id="imagethree">
+        </label>
+    </div>
+    <div>
+        <input id="guess" type="submit" value="Guess">
+    </div>
+    <div style="margin-top:1em">
+        <table id="resulttable">
+        </table>
+    </div>
+
+    <div>
+        <p id="error-message-text"></p>
+    </div>
+
+    <script async src="./wasm-init.js" type="module"></script>
+    <script async src="./guess.js" type="module"></script>
+</body>
+
+</html>

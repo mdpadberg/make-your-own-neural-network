@@ -3,50 +3,21 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Neuralnetwork</title>
+    <title>My neural network project</title>
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <div style="margin-top:1em;">
-        <p>Download this pre trained neural network:</p>
-        <a href="pre-trained-nn.txt" download="pre-trained-nn.txt">Neural network</a>
+    <div>
+        <h1>Welcome to my neural network project</h1>
     </div>
-    <div style="margin-top:1em;">
-        <p>Upload a trained neural network:</p>
-        <input 
-            id="uploadInput" 
-            type="file"
-            accept="text/plain">
+    <div>
+        <p>If you want to train your own neural network <a href="train-nn.html">click here</a></p>
     </div>
-    <div style="margin-top:1em;">
-        <p>Click on refresh button and get 3 random images from the mnist verification dataset</p>
+    <div>
+        <p>If you want to see your trained neural network or my pre-trained neural network in action <a
+                href="guess.html">click here</a></p>
     </div>
-    <div style="margin-top:1em;">
-        <input id="get3images" type="submit" value="Get images">
-    </div>
-    <div style="margin-top:1em;">
-        <label id="imageone">
-        </label>
-        <label id="imagetwo">
-        </label>
-        <label id="imagethree">
-        </label>
-    </div>
-    <div style="margin-top:1em;">
-        <input id="guess" type="submit" value="Guess">
-    </div>
-    <div style="margin-top:1em">
-        <table id="resulttable">
-        </table>
-    </div>
-
-    <div style="margin-top:1em;">
-        <p id="error-message-text"></p>
-    </div>
-
-    <script async src="./wasm-init.js" type="module"></script>
-    <script async src="./index.js" type="module"></script>
 </body>
 
 </html>

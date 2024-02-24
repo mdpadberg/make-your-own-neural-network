@@ -1,24 +1,12 @@
-/* HIDE RADIO */
-[type=radio] { 
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-  
-/* IMAGE STYLES */
-[type=radio] + img {
-  cursor: pointer;
-}
-  
-/* CHECKED STYLES */
-[type=radio]:checked + img {
-  outline: 2px solid #f00;
+:root {
+  background-color: #181a1b;
+  color: #c9c7c6;
 }
 
-#error-message-text {
-  color: red;
-  font-size: 1.5em;
-  font-weight: bold;
-  margin: 1em 0;
+a {
+  color: #3189f1;
+}
+
+body>div {
+  margin-top: 1em;
 }

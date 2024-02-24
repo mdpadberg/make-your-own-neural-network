@@ -1,3 +1,24 @@
+:root {
+    background-color: #181a1b;
+    color: #c9c7c6;
+}
+
+body>div {
+    margin-top: 1em;
+}
+
+body>div>div {
+    margin-top: 0.5em;
+}
+
+a {
+    color: #3189f1;
+}
+
+b {
+    color: red;
+}
+
 #error-message-text {
     color: red;
     font-size: 1.5em;
