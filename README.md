@@ -8,12 +8,12 @@ This is my implement of a basic neural network with 0 dependencies. This impleme
 
 The core part of this project, is like the name implies, the center of this neural network project. This part does lots of matrix things, like: adding two matrices, matrix multiplications, transposing a matrix, etc. ***In this implementation I used 0 dependencies or libraries for any of the main functionalities.*** The core uses 4 dependencies: 2 for generating random numbers (rand & getrandom), 1 for making rust error handling a little easier (anyhow), and 1 for serializing and de-serializing the neural network to and from json. So I'm proud to say that this is my implementation, without the help of any libs :-)
 
-The wasm part of this project is used to communicate between the core and the JavaScript frontend.
+The wasm part of this project, creates WebAssembly and Javascript functions that can communicate with the core. For example: it loads the mnist dataset, queries the neural network, and trains the nerual network.
 
-The www part of this project is the html, css, javascript to render everything in github pages. It communicates with wasm to query and/or train a neural network
+The www part of this project is the Html, Css, Javascript, and WebAssembly to render everything in github pages.
 
 ## Performance
-This isn't the most performant neural network implementation. Firstly, its only using the CPU while most professional neural network implementations are using the GPU. Secondly, its single threaded by design. While rust provides fearless concurrency, i didn’t feel that this was necessary in this project, because my goal was to learn how to create a simple neural network, not to make better tensorflow.
+This isn't the most performant neural network implementation. Firstly, its only using the CPU while most professional neural network implementations are using the GPU. Secondly, its single threaded by design. While rust provides fearless concurrency, i didn’t feel that this was necessary in this project, because my goal was to learn how to create a simple neural network, not to make a better tensorflow.
 
 ## Mnist dataset
 The MNIST dataset is a database of handwritten digits. It has a training set of 60,000 examples and a test set of 10,000 examples. It is a subset of a larger set available from NIST. The digits have been size-normalized and centered in a fixed-size image. It is a good database for people who want to try learning techniques and pattern recognition methods on real-world data while spending minimal efforts on preprocessing and formatting. 
